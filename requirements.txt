@@ -3,3 +3,4 @@ openai
 pypdf
 langchain_openai
 langchain_chroma
+langchain_community
