@@ -1,6 +1,7 @@
 langchain
 openai
 pypdf
+pysqlite3-binary
 langchain_chroma
 langchain_community
 langchain_openai
