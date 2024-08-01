@@ -8,6 +8,6 @@ langchain_community
 langchain_openai
 langchain_core
 langchainhub
+streamlit_extras
 streamlit==1.9.0
 protobuf~=3.19.0
-streamlit_extras
