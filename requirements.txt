@@ -8,4 +8,4 @@ langchain_community
 langchain_openai
 langchain_core
 langchainhub
-streamlit-extras
+streamlit_extras
