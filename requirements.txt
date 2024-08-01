@@ -9,3 +9,4 @@ langchain_openai
 langchain_core
 langchainhub
 streamlit_extras
+protobuf~=3.19.0
