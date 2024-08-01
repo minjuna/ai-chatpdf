@@ -29,7 +29,7 @@ uploaded_file = st.file_uploader("PDF 파일을 올려주세요!", type=['pdf'])
 st.write("---")
 
 #Buy me a coffee
-button(username="minjuna", floating=False, width=221)
+button(username="minjuna", floating=True, width=221)
 
 def pdf_to_document(uploaded_file):
     temp_dir = tempfile.TemporaryDirectory()
