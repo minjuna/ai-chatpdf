@@ -20,6 +20,9 @@ import os
 st.title("ChatPDF")
 st.write("---")
 
+#OpenAI 키 입력받기
+openai_key = st.text_input('OPEN_AI_API_KEY', type="password")
+
 #파일 업로드
 uploaded_file = st.file_uploader("PDF 파일을 올려주세요!", type=['pdf'])
 st.write("---")
@@ -49,7 +52,7 @@ if uploaded_file is not None:
     texts = text_splitter.split_documents(pages)
 
     #Embedding
-    embeddings_model = OpenAIEmbeddings()
+    embeddings_model = OpenAIEmbeddings(openai_api_key=openai_key)
 
     #Chroma DB
     db = Chroma.from_documents(texts, embeddings_model)
@@ -61,7 +64,7 @@ if uploaded_file is not None:
     if st.button("질문하기"):
         with st.spinner('Wait for it...'):
             #Retriever
-            llm = ChatOpenAI(temperature=0)
+            llm = ChatOpenAI(temperature=0, openai_api_key=openai_key)
             retriever_from_llm = MultiQueryRetriever.from_llm(
             retriever=db.as_retriever(), llm=llm
             )
@@ -82,5 +85,5 @@ if uploaded_file is not None:
 
             #Question
             result = rag_chain.invoke(question)
+            
             st.write(result)
-
