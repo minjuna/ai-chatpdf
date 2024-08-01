@@ -13,6 +13,7 @@ from langchain_core.runnables import RunnablePassthrough
 import streamlit as st
 import tempfile
 import os
+from streamlit_extras.buy_me_a_coffee import button
 #from dotenv import load_dotenv
 #load_dotenv()
 
@@ -26,6 +27,9 @@ openai_key = st.text_input('OPEN_AI_API_KEY', type="password")
 #파일 업로드
 uploaded_file = st.file_uploader("PDF 파일을 올려주세요!", type=['pdf'])
 st.write("---")
+
+#Buy me a coffee
+button(username="minjuna", floating=False, width=221)
 
 def pdf_to_document(uploaded_file):
     temp_dir = tempfile.TemporaryDirectory()
