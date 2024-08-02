@@ -14,6 +14,7 @@ import streamlit as st
 import tempfile
 import os
 from streamlit_extras.buy_me_a_coffee import button
+from langchain.callbacks.base import BaseCallbackHandler
 #from dotenv import load_dotenv
 #load_dotenv()
 
