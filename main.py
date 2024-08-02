@@ -61,12 +61,24 @@ if uploaded_file is not None:
     #Chroma DB
     db = Chroma.from_documents(texts, embeddings_model)
 
+    #Stream 받아 줄 Hander 만들기
+    class StreamHandler(BaseCallbackHandler):
+        def __init__(self, container, initial_text=""):
+            self.container = container
+            self.text=initial_text
+        def on_llm_new_token(self, token: str, **kwargs) -> None:
+            self.text+=token
+            self.container.markdown(self.text)
+
     #User Input
     st.header("PDF에게 질문해보세요!!")
     question = st.text_input("질문을 입력하세요")
 
     if st.button("질문하기"):
         with st.spinner('Wait for it...'):
+            chat_box = st.empty()
+            stream_hander = StreamHandler(chat_box)
+            
             #Retriever
             llm = ChatOpenAI(temperature=0, openai_api_key=openai_key)
             retriever_from_llm = MultiQueryRetriever.from_llm(
@@ -78,16 +90,16 @@ if uploaded_file is not None:
             prompt = hub.pull("rlm/rag-prompt")
 
             #Generate
+            generate_llm = ChatOpenAI(temperature=0, openai_api_key=openai_key, streaming=True, callbacks=[stream_hander])
             def format_docs(docs):
                 return "\n\n".join(doc.page_content for doc in docs)
             rag_chain = (
             {"context": retriever_from_llm | format_docs, "question": RunnablePassthrough()}
             | prompt
-            | llm
+            | generate_llm
             | StrOutputParser()
             )
 
             #Question
             result = rag_chain.invoke(question)
             
-            st.write(result)
