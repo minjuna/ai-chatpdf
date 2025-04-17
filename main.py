@@ -14,6 +14,8 @@ from langchain_core.runnables import RunnablePassthrough
 import streamlit as st
 import tempfile
 import os
+from streamlit_extras.buy_me_a_coffee import button
+from langchain.callbacks.base import BaseCallbackHandler
 #from dotenv import load_dotenv
 #load_dotenv()
 
@@ -21,9 +23,15 @@ import os
 st.title("ChatPDF")
 st.write("---")
 
+#OpenAI 키 입력받기
+openai_key = st.text_input('OPEN_AI_API_KEY', type="password")
+
 #파일 업로드
 uploaded_file = st.file_uploader("PDF 파일을 올려주세요!", type=['pdf'])
 st.write("---")
+
+#Buy me a coffee
+button(username="{계정 ID}", floating=True, width=221)
 
 def pdf_to_document(uploaded_file):
    temp_dir = tempfile.TemporaryDirectory()
@@ -51,17 +59,27 @@ if uploaded_file is not None:
     #Embedding
     embeddings_model = OpenAIEmbeddings(
         model="text-embedding-3-large",
+        openai_api_key=openai_key
         # With the `text-embedding-3` class
         # of models, you can specify the size
         # of the embeddings you want returned.
         # dimensions=1024
     )
-
+    
     import chromadb
     chromadb.api.client.SharedSystemClient.clear_system_cache()
     
     #Chroma DB
     db = Chroma.from_documents(texts, embeddings_model)
+
+    #스트리밍 처리할 Handler 생성
+    class StreamHandler(BaseCallbackHandler):
+       def __init__(self, container, initial_text=""):
+           self.container = container
+           self.text=initial_text
+       def on_llm_new_token(self, token: str, **kwargs) -> None:
+           self.text+=token
+           self.container.markdown(self.text)
 
     #User Input
     st.header("PDF에게 질문해보세요!!")
@@ -70,7 +88,7 @@ if uploaded_file is not None:
     if st.button("질문하기"):
         with st.spinner('Wait for it...'):
             #Retriever
-            llm = ChatOpenAI(temperature=0)
+            llm = ChatOpenAI(temperature=0, openai_api_key=openai_key)
             retriever_from_llm = MultiQueryRetriever.from_llm(
                 retriever=db.as_retriever(), llm=llm
             )
@@ -79,15 +97,18 @@ if uploaded_file is not None:
             prompt = hub.pull("rlm/rag-prompt")
 
             #Generate
+            chat_box = st.empty()
+            stream_hander = StreamHandler(chat_box)
+            generate_llm = ChatOpenAI(temperature=0, openai_api_key=openai_key, streaming=True, callbacks=[stream_hander])
             def format_docs(docs):
                 return "\n\n".join(doc.page_content for doc in docs)
             rag_chain = (
                 {"context": retriever_from_llm | format_docs, "question": RunnablePassthrough()}
                 | prompt
-                | llm
+                | generate_llm
                 | StrOutputParser()
             )
 
             #Question
             result = rag_chain.invoke(question)
-            st.write(result)
+            #st.write(result)
