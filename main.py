@@ -56,8 +56,10 @@ if uploaded_file is not None:
         # of the embeddings you want returned.
         # dimensions=1024
     )
-   import chromadb
-   chromadb.api.client.SharedSystemClient.clear_system_cache()
+
+    import chromadb
+    chromadb.api.client.SharedSystemClient.clear_system_cache()
+    
     #Chroma DB
     db = Chroma.from_documents(texts, embeddings_model)
 
